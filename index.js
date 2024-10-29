@@ -1,65 +1,31 @@
-const express = require("express");
-const mysql = require("mysql2");
+const express = require('express');
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const app = express();
-const PORT = 8080;
+const PORT = 8082;
 
-app.listen(PORT, (e) => {
-    console.log(`Conectado en el puerto ${PORT}`);
-  });
-  
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+app.use(express.json());
 
-//*Concexion a la base de datos
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "123456789",
-  database: "cocina_ia",
+app.get('/', (req, res) => {
+    console.log('Bienvenidos al API');
+    res.send('HOLA');
 });
 
+app.get('/recetas', async (req, res) => {
+    const { data, error } = await supabase.from('recetas').select('*');
 
-connection.connect((err) => {
-  if (err) {
-    console.log("Error de conexion " + err.stack);
-    return;
-  }
-  console.log("Conectado con exito a la base de datos " + connection.threadId);
-});
-
-
-app.get("/", (req, res) => {
-    res.send("Bienvendios al himalaya")
-})
-
-
-
-app.get("/postres", (req, res) => {
-  connection.query("SELECT * FROM recetas WHERE categorias LIKE '%postre%'", (err, result, fields) => {
-    if (err) {
-      res.status(500).send("Error al obtener las recetas");
-      console.error(err);
-      return;
+    if (error) {
+        return res.status(500).json({ error: error.message });
     }
-    res.json(result);
-  });
+
+    res.json(data);
 });
 
-
-app.get("/recomendaciones", (req, res) => {
-  connection.query("SELECT * FROM recetas WHERE categorias LIKE '%española%' OR categorias LIKE '%arroces%' ", (err, result, fields) => {
-    if (err) {
-      res.status(500).send("Error al obtener las recetas");
-      console.error(err);
-      return;
-    }
-    res.json(result);
-  });
+app.listen(PORT, () => {
+    console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
-
- 
-
- 
-
-
-
-
