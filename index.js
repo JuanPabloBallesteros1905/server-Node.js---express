@@ -16,8 +16,25 @@ app.get('/', (req, res) => {
     res.send('HOLA');
 });
 
+
+app.get('/recetas/recomendaciones', async (req, res) => {
+    const { data, error } = await supabase
+        .from('recetas')
+        .select('*')
+        .like('categorias', '%española%')
+        
+
+    if (error) {
+        console.error('Error fetching data:', error);
+        return res.status(500).json({ error: error.message }); // Manejo de errores
+    }
+
+    res.json(data);  
+});
+
+
 app.get('/recetas', async (req, res) => {
-    const { data, error } = await supabase.from('recetas').select('*');
+    const { data, error } = await supabase.from('recetas').select('*').like('categorias', '%postre%')
 
     if (error) {
         return res.status(500).json({ error: error.message });
